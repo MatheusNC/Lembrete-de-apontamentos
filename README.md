@@ -12,6 +12,21 @@ Certifique-se de ter o Python instalado em seu sistema antes de executar este ap
 
 ## Como executar
 
+1. É possível alterar o caminho de onde o banco de dados será criado. Altere os caminhos "./db" para o caminho desejado.
+
+    ```python
+    if os.path.exists("./db"):
+            print("Conectando ao banco...")
+            self.connect = sqlite3.connect("./db/database.sqlite")
+            self.cursor = self.connect.cursor()
+        else:
+            print("Banco de dados não encontrado")
+            print("Criando banco de dados...")
+            os.mkdir("./db")
+            self.connect = sqlite3.connect("./db/database.sqlite")
+            self.cursor = self.connect.cursor()
+    ```
+
 1. Abra o terminal e navegue até o diretório do projeto.
 2. Execute o seguinte comando para iniciar o aplicativo:
 
