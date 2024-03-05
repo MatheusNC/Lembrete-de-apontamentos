@@ -24,9 +24,17 @@ class Functions():
         self.status_entry.set('Local')
         
     def connect_db(self):
-        print("Conectando ao banco...")
-        self.connect = sqlite3.connect("C:\workspace\pentare\Appointment_Reminder\database.sqlite")
-        self.cursor = self.connect.cursor()
+        if os.path.exists("./db"):
+            print("Conectando ao banco...")
+            self.connect = sqlite3.connect("./db/database.sqlite")
+            self.cursor = self.connect.cursor()
+        else:
+            print("Banco de dados não encontrado")
+            print("Criando banco de dados...")
+            os.mkdir("./db")
+            self.connect = sqlite3.connect("./db/database.sqlite")
+            self.cursor = self.connect.cursor()
+
         
     def disconnect_db(self):
         print("Desconectando do banco...")
@@ -65,7 +73,7 @@ class Functions():
         self.connect_db()
         
         lista = self.cursor.execute(""" SELECT status, code, data, hora_inicio, hora_fim, descricao FROM apontamento
-            ORDER BY data,hora_inicio ASC; """)
+            ORDER BY data DESC; """)
         for i in lista:
             self.lista.insert("", END, values=i)
         self.disconnect_db()
@@ -88,11 +96,11 @@ class Functions():
         
         if self.order == 'ASC':
             lista = self.cursor.execute(""" SELECT status, code, data, hora_inicio, hora_fim, descricao FROM apontamento
-                ORDER BY code DESC; """)
+                ORDER BY data DESC; """)
             self.order = 'DESC'
         elif self.order == 'DESC':
             lista = self.cursor.execute(""" SELECT status, code, data, hora_inicio, hora_fim, descricao FROM apontamento
-                ORDER BY code ASC; """)
+                ORDER BY data ASC; """)
             self.order = 'ASC'
         
         for i in lista:
