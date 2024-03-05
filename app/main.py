@@ -40,7 +40,8 @@ class Functions():
                 data DATE NOT NULL,
                 hora_inicio INTEGER NOT NULL,
                 hora_fim INTEGER NOT NULL,
-                descricao CHAR(100)
+                descricao CHAR(100),
+                status CHAR(20)
             );
         """)
         self.connect.commit(); print("Banco de dados criado")
@@ -73,12 +74,13 @@ class Functions():
         self.limpar()
         
         for n in self.lista.selection():
-            col1, col2, col3, col4, col5 = self.lista.item(n, "values")
-            self.codigo_entry.insert(END, col1)
-            self.dia_entry.set_date(date=datetime.strptime(col2, "%Y-%m-%d").date())
-            self.hora_inicio_entry.set24Hrs(val=col3)
-            self.hora_fim_entry.set24Hrs(val=col4)
-            self.descricao_entry.insert(END, col5)
+            col1, col2, col3, col4, col5, col6 = self.lista.item(n, "values")
+            self.codigo_entry.insert(END, col2)
+            self.dia_entry.set_date(date=datetime.strptime(col3, "%Y-%m-%d").date())
+            self.hora_inicio_entry.set24Hrs(val=col4)
+            self.hora_fim_entry.set24Hrs(val=col5)
+            self.descricao_entry.insert(END, col6)
+            self.status_entry.set(col1)
         
     def order_table(self):
         self.lista.delete(*self.lista.get_children())
@@ -143,6 +145,48 @@ class Functions():
         
         self.disconnect_db()
         self.select_appointment()
+    
+    def change_status(self):
+        config = Toplevel()
+        config.title("Alterar Status")
+        config.configure(background="#27374D")
+        config.geometry("400x300")
+        config.resizable(FALSE, FALSE)
+        config.transient(root)
+        config.focus_force()
+
+        self.altera_frame = Frame(config, bg="#DDE6ED", highlightbackground="#526D82", highlightthickness=2)
+        self.altera_frame.place(relx= 0.01, rely=0.01, relwidth=0.98, relheight=0.98)
+        
+        self.lb_codigo_inicial = Label(config, text="Código Inicial", bg="#DDE6ED", font=('arial', 12, 'bold'))
+        self.lb_codigo_inicial.place(relx=0.05, rely=0.05)
+        self.codigo_entry_inicial = Entry(config)
+        self.codigo_entry_inicial.place(relx=0.05, rely=0.15, relwidth=0.3)
+
+        self.lb_codigo_final = Label(config, text="Código Final", bg="#DDE6ED", font=('arial', 12, 'bold'))
+        self.lb_codigo_final.place(relx=0.05, rely=0.25)
+        self.codigo_entry_final = Entry(config)
+        self.codigo_entry_final.place(relx=0.05, rely=0.35, relwidth=0.3)
+
+        self.lb_altera_status = Label(config, text="Status", bg="#DDE6ED", font=('arial', 12, 'bold'))
+        self.lb_altera_status.place(relx=0.05, rely=0.45)
+        self.altera_status_entry = ttk.Combobox(config)
+        self.altera_status_entry['values'] = ('Local', 'Rascunho', 'Enviado', 'Devolvido', 'Aprovado')
+        self.altera_status_entry['state'] = 'readonly'
+        self.altera_status_entry.place(relx=0.05, rely=0.55, relwidth=0.3)
+
+        self.bt_altera_status = Button(config, text="Alterar", bg="#9DB2BF", command=self.change_status_appointment)
+        self.bt_altera_status.place(relx=0.22, rely=0.75, relwidth=0.5, relheight=0.1)
+    
+    def change_status_appointment(self):
+        self.codigo_inicial = self.codigo_entry_inicial.get()
+        self.codigo_final = self.codigo_entry_final.get()
+        self.connect_db()
+        for i in range(int(self.codigo_inicial), int(self.codigo_final)+1):
+            self.cursor.execute(""" UPDATE apontamento SET status = ? WHERE code = ? """, (self.altera_status_entry.get(), i))
+        self.connect.commit()
+        self.disconnect_db()
+        self.select_appointment()
 
 class Application(Functions):
     def __init__(self) -> None:
@@ -170,9 +214,15 @@ class Application(Functions):
     def widgets(self):
         self.lb_codigo = Label(self.frame_1, text="Código", bg="#DDE6ED", font=('arial', 12, 'bold'))
         self.lb_codigo.place(relx=0.01, rely=0.05)
-        
         self.codigo_entry = Entry(self.frame_1)
         self.codigo_entry.place(relx=0.01, rely=0.15, relwidth=0.1)
+
+        self.lb_status = Label(self.frame_1, text="Status", bg="#DDE6ED", font=('arial', 12, 'bold'))
+        self.lb_status.place(relx=0.15, rely=0.05)
+        self.status_entry = ttk.Combobox(self.frame_1)
+        self.status_entry['values'] = ('Local', 'Rascunho', 'Enviado', 'Devolvido', 'Aprovado')
+        self.status_entry['state'] = 'readonly'
+        self.status_entry.place(relx=0.15, rely=0.15, relwidth=0.1)
         
         self.lb_dia = Label(self.frame_1, text="Dia", bg="#DDE6ED", font=('arial', 12, 'bold'))
         self.lb_dia.place(relx=0.01, rely=0.25)
@@ -200,13 +250,6 @@ class Application(Functions):
         self.lb_descricao.place(relx=0.01, rely=0.65)
         self.descricao_entry = Entry(self.frame_1, highlightbackground="#526D82", highlightthickness=2)
         self.descricao_entry.place(relx=0.01, rely=0.75, relwidth=0.8)
-
-        self.lb_status = Label(self.frame_1, text="Status", bg="#DDE6ED", font=('arial', 12, 'bold'))
-        self.lb_status.place(relx=0.01, rely=0.85)
-        self.status_entry = ttk.Combobox(self.frame_1)
-        self.status_entry['values'] = ('Local', 'Rascunho', 'Enviado', 'Devolvido', 'Aprovado')
-        self.status_entry['state'] = 'readonly'
-        self.status_entry.place(relx=0.01, rely=0.95, relwidth=0.8)
         
         self.bt_compacta = Button(self.frame_1, text="Compactar", bg="#9DB2BF", command=self.compact_appointment)
         self.bt_compacta.place(relx=0.45, rely=0.05, relwidth=0.1, relheight=0.1)
@@ -222,9 +265,12 @@ class Application(Functions):
         
         self.bt_apaga = Button(self.frame_1, text="Apagar", bg="#9DB2BF", command=self.delete_appointment)
         self.bt_apaga.place(relx=0.89, rely=0.05, relwidth=0.1, relheight=0.1)
+
+        self.bt_altera_status = Button(self.frame_1, text="Alterar Status", bg="#9DB2BF", command=self.change_status)
+        self.bt_altera_status.place(relx=0.79, rely=0.15, relwidth=0.1, relheight=0.1)
     def widget_list(self):
         self.order = 'ASC'
-        self.lista = ttk.Treeview(self.frame_2, height= 3, columns=(1,2,3,4,5))
+        self.lista = ttk.Treeview(self.frame_2, height= 3, columns=(1,2,3,4,5,6))
         self.lista.heading("#0", text="")
         self.lista.heading(1, text="Status", command=self.order_table)
         self.lista.heading(2, text="Código", command=self.order_table)
@@ -239,7 +285,7 @@ class Application(Functions):
         self.lista.column(3, width=100)
         self.lista.column(4, width=50)
         self.lista.column(5, width=50)
-        self.lista.column(6, width=275)
+        self.lista.column(6, width=250)
         
         self.lista.place(relx=0.01, rely=0.1, relwidth=0.95, relheight=0.85)
         self.lista.bind("<Double-1>", self.OnDoubleClick)
