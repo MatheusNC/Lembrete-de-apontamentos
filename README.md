@@ -8,7 +8,9 @@ Certifique-se de ter o Python instalado em seu sistema antes de executar este ap
 
 ## Melhoria (Windows)
 
-É possível executar o programa recorrente, você terá que abrir o "Agendador de Tarefas" e criar uma nova tarefa. Quando for selecionar qual arquivo deseja executar, use o run.BAT
+Altere o caminho do arquivo run.BAT para o caminho do seu arquivo 'main.py' ```python -u "seu_caminho\main.py"```
+
+É possível executar o programa de forma recorrente, você terá que abrir o "Agendador de Tarefas" e criar uma nova tarefa. Quando for selecionar qual arquivo deseja executar, use o run.BAT
 
 ## Como executar
 

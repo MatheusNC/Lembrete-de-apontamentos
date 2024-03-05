@@ -1,1 +1,1 @@
-python -u "c:\workspace\pentare\Appointment_Reminder\app\main.py"
+python -u "seu_caminho\main.py"
